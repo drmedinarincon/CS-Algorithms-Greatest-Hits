@@ -1,0 +1,332 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Number of varianles and clauses: 100000\n",
+      "Number of varianles and clauses: 200000\n",
+      "Number of varianles and clauses: 400000\n",
+      "Number of varianles and clauses: 600000\n",
+      "Number of varianles and clauses: 800000\n",
+      "Number of varianles and clauses: 1000000\n"
+     ]
+    }
+   ],
+   "source": [
+    "import csv\n",
+    "import networkx as nx\n",
+    "\n",
+    "# LOADING THE INPUT FILES\n",
+    "\n",
+    "# The input files are read and stored in lists. Each entry in the list consists of a conditional statement between\n",
+    "# 2 variables in a 2-SAT problem. If the variable is negative, it means negation.\n",
+    "\n",
+    "# Reading the 1st file\n",
+    "list1=[]\n",
+    "with open('2sat1.txt', 'r') as fd:\n",
+    "    reader = csv.reader(fd)\n",
+    "    for row in reader:\n",
+    "        list1.append(row[0].split())\n",
+    "list1.pop(0)\n",
+    "list1=[(int(x[0]),int(x[1])) for x in list1]\n",
+    "print(\"Number of varianles and clauses: \"+str(len(list1)))\n",
+    "\n",
+    "# Reading the 2nd file\n",
+    "list2=[]\n",
+    "with open('2sat2.txt', 'r') as fd:\n",
+    "    reader = csv.reader(fd)\n",
+    "    for row in reader:\n",
+    "        list2.append(row[0].split())\n",
+    "list2.pop(0)\n",
+    "list2=[(int(x[0]),int(x[1])) for x in list2]\n",
+    "print(\"Number of varianles and clauses: \"+str(len(list2)))\n",
+    "\n",
+    "# Reading the 3rd file\n",
+    "list3=[]\n",
+    "with open('2sat3.txt', 'r') as fd:\n",
+    "    reader = csv.reader(fd)\n",
+    "    for row in reader:\n",
+    "        list3.append(row[0].split())\n",
+    "list3.pop(0)\n",
+    "list3=[(int(x[0]),int(x[1])) for x in list3]\n",
+    "print(\"Number of varianles and clauses: \"+str(len(list3)))\n",
+    "\n",
+    "# Reading the 4th file\n",
+    "list4=[]\n",
+    "with open('2sat4.txt', 'r') as fd:\n",
+    "    reader = csv.reader(fd)\n",
+    "    for row in reader:\n",
+    "        list4.append(row[0].split())\n",
+    "list4.pop(0)\n",
+    "list4=[(int(x[0]),int(x[1])) for x in list4]\n",
+    "print(\"Number of varianles and clauses: \"+str(len(list4)))\n",
+    "\n",
+    "# Reading the 5th file\n",
+    "list5=[]\n",
+    "with open('2sat5.txt', 'r') as fd:\n",
+    "    reader = csv.reader(fd)\n",
+    "    for row in reader:\n",
+    "        list5.append(row[0].split())\n",
+    "list5.pop(0)\n",
+    "list5=[(int(x[0]),int(x[1])) for x in list5]\n",
+    "print(\"Number of varianles and clauses: \"+str(len(list5)))\n",
+    "\n",
+    "# Reading the 6th file\n",
+    "list6=[]\n",
+    "with open('2sat6.txt', 'r') as fd:\n",
+    "    reader = csv.reader(fd)\n",
+    "    for row in reader:\n",
+    "        list6.append(row[0].split())\n",
+    "list6.pop(0)\n",
+    "list6=[(int(x[0]),int(x[1])) for x in list6]\n",
+    "print(\"Number of varianles and clauses: \"+str(len(list6)))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# CODE FOR THE SATISFIABILITY OF THE 2-SAT PROBLEM USING SCC AND IMPLICATION GRAPHS\n",
+    "\n",
+    "def Two_SAT(Lista):\n",
+    "    # This function evaluates if a 2-SAT problem is satisfiable or not. To do this, it constructs the implication\n",
+    "    # graph for the problem where each variable and it's negation are nodes. The edges of the implication graph\n",
+    "    # are built out of the clauses. Then, using the Strongly Connected Components (SCC) of the graph we evaluate if\n",
+    "    # it is satisfiable or not: If a variable and it's negation belong in the same SCC, then it is not satifiable.\n",
+    "    # INPUT: A list where each entry is a clause of 2 variables, where a negative in one of the variables means\n",
+    "    # negation.\n",
+    "    # OUTPUT: '1' If the problem is satisfiable '0' if it is not satisfiable.\n",
+    "    \n",
+    "    # The implication graph is constructed\n",
+    "    G = nx.DiGraph()\n",
+    "    for x in Lista:\n",
+    "        G.add_edge(-x[0],x[1])\n",
+    "        G.add_edge(-x[1],x[0])\n",
+    "    \n",
+    "    # This gives a list of all positive nodes in the implication graph\n",
+    "    Positive_Nodes=[ x for x in G.nodes() if x>0]\n",
+    "    \n",
+    "    # We find the SCC of the implication graph\n",
+    "    SCC=list(nx.strongly_connected_components(G))\n",
+    "    \n",
+    "    # We determine if the problem is satifiable or not using the criteria mentioned above: If both a variable and \n",
+    "    # it's negation belong to the same SCC, then the problem is not satisfiable. We check this condition for all\n",
+    "    # variables. Else, it is satisfiable.\n",
+    "    Flag=1\n",
+    "    for i in range(len(Positive_Nodes)):\n",
+    "        Temp=len([x for x in SCC if (Positive_Nodes[i] in x and -Positive_Nodes[i] in x)])\n",
+    "        if Temp>0:\n",
+    "            Flag=0\n",
+    "            break\n",
+    "            \n",
+    "    # This returns the final answer: '0' if not satisfiable, '1' if satisfiable \n",
+    "    if Flag==0:\n",
+    "        print('This 2-SAT problem is not satisfiable.')\n",
+    "        return str(Flag)\n",
+    "    else:\n",
+    "        print('This 2-SAT problem is satisfiable.')\n",
+    "        return str(Flag)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "This 2-SAT problem is satisfiable.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'1'"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# USING THE 2-SATS CODE ON THE INPUT FILES\n",
+    "\n",
+    "Two_SAT(list1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "This 2-SAT problem is not satisfiable.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'0'"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Two_SAT(list2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "This 2-SAT problem is not satisfiable.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'0'"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Two_SAT(list5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "This 2-SAT problem is not satisfiable.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'0'"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Two_SAT(list6)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "This 2-SAT problem is satisfiable.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'1'"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Two_SAT(list4)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "This 2-SAT problem is satisfiable.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'1'"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Two_SAT(list3)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
